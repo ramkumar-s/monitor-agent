@@ -73,7 +73,6 @@ func collectData(dataChan chan<- DataStruct) {
 				continue
 			}
 
-			fmt.Println("---------------------------------------------------------")
 			data := DataStruct{
 				Pid:       pid,
 				Name:      name,
@@ -107,9 +106,17 @@ func writeToCSV(dataChan <-chan DataStruct) {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
+	// Write the header to the CSV file
+	header := []string{"Timestamp", "Pid", "Name", "Cpu", "Rss", "Vms", "ReadIO", "WriteIO"}
+	if err := writer.Write(header); err != nil {
+		panic(err)
+	}
+	writer.Flush() // Ensure the header is written immediately
+
 	for data := range dataChan {
 		// Convert data to a slice of strings (or any format suitable for CSV)
 		record := []string{
+			data.Timestamp.Format(time.RFC3339),       // Convert time.Time to string
 			strconv.FormatInt(int64(data.Pid), 10),    // Convert int32 to string
 			data.Name,                                 // String can be used directly
 			strconv.FormatFloat(data.Cpu, 'f', 2, 64), // Convert float64 to string with 2 decimal precision
@@ -117,7 +124,6 @@ func writeToCSV(dataChan <-chan DataStruct) {
 			strconv.FormatUint(data.Vms, 10),          // Convert uint64 to string
 			strconv.FormatUint(data.ReadIO, 10),       // Convert uint64 to string
 			strconv.FormatUint(data.WriteIO, 10),      // Convert uint64 to string
-			data.Timestamp.Format(time.RFC3339),       // Convert time.Time to string
 		}
 		// Write to CSV
 		if err := writer.Write(record); err != nil {
