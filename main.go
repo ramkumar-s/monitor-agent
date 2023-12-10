@@ -46,7 +46,7 @@ func collectData(dataChan chan<- DataStruct) {
 			}
 
 			// Get process name
-			name, err := p.Name()
+			name, err := p.Cmdline()
 			if err != nil {
 				fmt.Printf("Error while fetching name for process %d: %s\n", pid, err)
 				continue
